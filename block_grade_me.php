@@ -18,7 +18,7 @@
  * Grade Me block.
  *
  * @package    block_grade_me
- * @copyright  2013 Dakota Duff {@link http://www.remote-learner.net}
+ * @copyright  2013 Dakota Duff {@link http://www.remote-learner.net}, 2023 Philip Potter <philip.potter@skillsactive.org.nz>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -82,16 +82,47 @@ class block_grade_me extends block_base {
             $gradeables = array();
             $gradebookusers = array();
             $context = context_course::instance($courseid);
+
             foreach (explode(',', $CFG->gradebookroles) as $roleid) {
                 $roleid = trim($roleid);
                 if ((groups_get_course_groupmode($course) == SEPARATEGROUPS) &&
                     !has_capability('moodle/site:accessallgroups', $context)) {
                     $groups = groups_get_user_groups($courseid, $USER->id);
+
                     foreach ($groups[0] as $groupid) {
-                        $gradebookusers = array_merge($gradebookusers,
-                            array_keys(get_role_users($roleid, $context, false, 'u.id', 'u.id ASC', null, $groupid)));
+
+                        // =========== CUSTOM SA CODE ===========
+
+                        // Ignore any groups where this user is not an assessor
+
+                            $sql = "SELECT groupid
+                                    FROM {role_assignments_custom} rac
+                                    WHERE rac.groupid = :groupid
+                                    AND rac.userid = :userid
+                                    AND rac.courseid = :courseid";
+                            $gpparams = array(
+                                'groupid'   => $groupid,
+                                'userid'    => $USER->id,
+                                'courseid'  => $courseid
+                            );
+                            $checkassessor = $DB->record_exists_sql($sql, $gpparams);
+
+                            if ($checkassessor) {
+                                $gradebookusers = array_merge($gradebookusers,
+                                    array_keys(get_role_users($roleid, $context, false, 'u.id', 'u.id ASC', null, $groupid)));
+                            }
                     }
+
+                    // Remove current user from group return
+                    
+                    if (($key = array_search($USER->id, $gradebookusers)) !== false) {
+                        unset($gradebookusers[$key]);
+                    }
+
+                    // =========== E/O CUSTOM SA CODE ===========
+                    
                 } else {
+
                     $gradebookusers = array_merge($gradebookusers,
                         array_keys(get_role_users($roleid, $context, false, 'u.id', 'u.id ASC')));
                 }
