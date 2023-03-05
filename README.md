@@ -1,6 +1,11 @@
 # Grade Me block
 This block for Moodle 2.x/3.x shows a list of gradable items.
 
+## Skills Active Changes
+Skills active requires additional changes to handle assessor group cross over if there is more than one assessor in a group.
+If an assessor is set as a learner in another group, that group is viewable by both assessors.
+Changes have been made to the main block_grade_me.php file to facilitate this.
+
 ## About this repository
 This repository is separated into branches for each supported version. For Moodle versions, branches are named like MOODLE_XX_STABLE. For Totara versions, branches are named like TOTARA_XX_STABLE. The “XX” corresponds to the version that branch is for. For example, MOODLE_27_STABLE would be for Moodle 2.7. These branches contain production-ready, stable code.
 
