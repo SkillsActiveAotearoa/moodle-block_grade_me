@@ -14,47 +14,38 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-function block_grade_me_required_capability_data() {
-    $enabledplugins['data'] = array(
-        'capability' => 'mod/data:rate',
+/**
+ * Required capabilities for the turnitintooltwo plugin.
+ *
+ * @return array Array of required capability information.
+ */
+function block_grade_me_required_capability_turnitintooltwo() {
+    $enabledplugins['turnitintooltwo'] = array(
+        'capability' => 'mod/turnitintooltwo:grade',
         'default_on' => false,
         'versiondependencies' => 'ANY_VERSION'
-        );
+    );
     return $enabledplugins;
 }
 
 /**
- * Build SQL query for the data plugin
+ * Build SQL query for the turnitintooltwo plugin
  *
  * @param array $gradebookusers ID's of gradebook users
  * @return array|bool SQL query and parameters or false on failure
  */
-function block_grade_me_query_data($gradebookusers) {
-    global $USER, $DB;
+function block_grade_me_query_turnitintooltwo($gradebookusers) {
+    global $DB;
 
     if (empty($gradebookusers)) {
         return false;
     }
-    $concatid = $DB->sql_concat('dr.id', "'-'", $USER->id);
-    $concatitem = $DB->sql_concat('r.itemid', "'-'", 'r.userid');
     list($insql, $inparams) = $DB->get_in_or_equal($gradebookusers);
 
-    $query = ", dr.id submissionid, dr.userid, dr.timemodified timesubmitted
-        FROM {data_records} dr
-        JOIN {data} d ON d.id = dr.dataid
-   LEFT JOIN {block_grade_me} bgm ON bgm.courseid = d.course AND bgm.iteminstance = d.id
-       WHERE dr.userid $insql
-             AND d.assessed = 1
-             AND $concatid NOT IN (
-             SELECT $concatitem
-               FROM {rating} r
-              WHERE r.contextid IN (
-                    SELECT cx.id
-                      FROM {context} cx
-                     WHERE cx.contextlevel = 70
-                           AND cx.instanceid = bgm.coursemoduleid
-                    )
-             )";
-
+    $query = ", ts.id submissionid, ts.userid, ts.submission_modified timesubmitted
+        FROM {turnitintooltwo_submissions} ts
+        JOIN {turnitintooltwo} t ON t.id = ts.turnitintooltwoid
+   LEFT JOIN {block_grade_me} bgm ON bgm.courseid = t.course AND bgm.iteminstance = t.id
+       WHERE ts.userid $insql AND t.grade > 0 AND ts.submission_grade IS NOT NULL";
     return array($query, $inparams);
 }

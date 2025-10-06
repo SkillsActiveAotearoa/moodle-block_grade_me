@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -62,7 +61,7 @@ function xmldb_block_grade_me_upgrade($oldversion, $block) {
 
         }
 
-        // grade_me savepoint reached
+        // Grade_me savepoint reached.
         upgrade_block_savepoint(true, 2013022600, 'grade_me');
     }
 
@@ -78,5 +77,36 @@ function xmldb_block_grade_me_upgrade($oldversion, $block) {
         upgrade_block_savepoint(true, 2013051402, 'grade_me');
     }
 
+    if ($oldversion < 2015102402) {
+        if (!$dbman->table_exists('block_grade_me_quiz_ngrade')) {
+            $dbman->install_one_table_from_xmldb_file(__DIR__ . '/install.xml', 'block_grade_me_quiz_ngrade');
+        }
+        $DB->delete_records('block_grade_me_quiz_ngrade');
+        // Pre populate block_grade_me_quiz_ngrade table.
+        \block_grade_me\quiz_util::update_quiz_ngrade();
+        upgrade_block_savepoint(true, '2015102402', 'grade_me');
+    }
+
+    if ($oldversion < 2016120503) {
+
+        // Define index itemmodule (not unique) to be added to grade_me.
+        $table = new xmldb_table('block_grade_me');
+        $index = new xmldb_index('itemmodule', XMLDB_INDEX_NOTUNIQUE, array('itemmodule'));
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Define index iteminstance (unique) to be added to grade_me.
+        $table = new xmldb_table('block_grade_me');
+        $index = new xmldb_index('iteminstance', XMLDB_INDEX_NOTUNIQUE, array('iteminstance'));
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Grade me  savepoint reached.
+        upgrade_block_savepoint(true, 2016120503, 'grade_me');
+    }
     return true;
 }

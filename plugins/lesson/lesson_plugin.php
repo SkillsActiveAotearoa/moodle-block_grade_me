@@ -15,32 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Grade Me Moodle 2.2+ assignment plugin.
+ * Required capabilities for the lesson plugin.
  *
- * @package    block_grade_me
- * @copyright  2013 Dakota Duff {@link http://www.remote-learner.net}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @return array Array of required capability information.
  */
-
-/**
- * @return array Specifics on the capabilities of the assignment plugin type
- */
-function block_grade_me_required_capability_assignment() {
-    $enabled_plugins['assignment'] = array(
-        'capability' => 'mod/assignment:grade',
-        'default_on' => true,
+function block_grade_me_required_capability_lesson() {
+    $enabledplugins['lesson'] = array(
+        'capability' => 'mod/lesson:grade',
+        'default_on' => false,
         'versiondependencies' => 'ANY_VERSION'
-        );
-    return $enabled_plugins;
+    );
+    return $enabledplugins;
 }
 
 /**
- * Build SQL query for the assignment plugin for Moodle 2.3 and later
+ * Build SQL query for the lesson plugin
  *
  * @param array $gradebookusers ID's of gradebook users
  * @return array|bool SQL query and parameters or false on failure
  */
-function block_grade_me_query_assignment($gradebookusers) {
+function block_grade_me_query_lesson($gradebookusers) {
     global $DB;
 
     if (empty($gradebookusers)) {
@@ -48,13 +42,14 @@ function block_grade_me_query_assignment($gradebookusers) {
     }
     list($insql, $inparams) = $DB->get_in_or_equal($gradebookusers);
 
-    $query = ", asgn_sub.id submissionid, asgn_sub.userid, asgn_sub.timemodified timesubmitted
-        FROM {assignment_submissions} asgn_sub
-        JOIN {assignment} a ON a.id = asgn_sub.assignment
-   LEFT JOIN {block_grade_me} bgm ON bgm.courseid = a.course AND bgm.iteminstance = a.id
-       WHERE asgn_sub.userid $insql
-             AND a.grade > 0
-             AND asgn_sub.timemarked < asgn_sub.timemodified";
-
+    $query = ", la.id submissionid, la.userid, lans.timecreated timesubmitted
+        FROM {lesson_attempts} la
+        JOIN {lesson} l ON l.id = la.lessonid
+        JOIN {lesson_answers} lans ON la.answerid = lans.id
+        JOIN {lesson_pages} lp ON lp.lessonid = l.id AND lp.qtype = 10 AND la.pageid = lp.id
+   LEFT JOIN {block_grade_me} bgm ON bgm.courseid = l.course AND bgm.iteminstance = l.id
+   LEFT JOIN {lesson_grades} lg ON lg.lessonid = l.id AND lg.userid = la.userid
+       WHERE la.userid $insql AND l.grade > 0 AND la.useranswer LIKE ?";
+    $inparams[] = '%s:6:"graded";i:0%';
     return array($query, $inparams);
 }

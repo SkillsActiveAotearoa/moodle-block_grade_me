@@ -1,12 +1,26 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 function block_grade_me_required_capability_glossary() {
-    $enabled_plugins['glossary'] = array( 
-        'capability' => 'mod/glossary:rate', 
-        'default_on' => false, 
+    $enabledplugins['glossary'] = array(
+        'capability' => 'mod/glossary:rate',
+        'default_on' => false,
         'versiondependencies' => 'ANY_VERSION'
         );
-    return $enabled_plugins;
+    return $enabledplugins;
 }
 
 /**
@@ -28,17 +42,18 @@ function block_grade_me_query_glossary($gradebookusers) {
     $query = ", ge.id submissionid, ge.userid, ge.timemodified timesubmitted
         FROM {glossary_entries} ge
         JOIN {glossary} g ON g.id = ge.glossaryid
-   LEFT JOIN {block_grade_me} bgm ON bgm.courseid = g.course AND bgm.iteminstance = ge.id
+   LEFT JOIN {block_grade_me} bgm ON bgm.courseid = g.course AND bgm.iteminstance = ge.glossaryid
        WHERE ge.userid $insql
-             AND g.assessed = 1
-             AND $concatid NOT IN (
+         AND g.assessed >= 1
+         AND g.scale <> 0
+         AND $concatid NOT IN (
              SELECT $concatitem
                FROM {rating} r
               WHERE r.contextid IN (
                     SELECT cx.id
                       FROM {context} cx
                      WHERE cx.contextlevel = 70
-                           AND cx.instanceid = bgm.coursemoduleid
+                       AND cx.instanceid = bgm.coursemoduleid
                     )
              )";
 
