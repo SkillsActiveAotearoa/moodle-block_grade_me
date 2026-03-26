@@ -47,9 +47,9 @@ function block_grade_me_query_lesson($gradebookusers) {
         JOIN {lesson} l ON l.id = la.lessonid
         JOIN {lesson_answers} lans ON la.answerid = lans.id
         JOIN {lesson_pages} lp ON lp.lessonid = l.id AND lp.qtype = 10 AND la.pageid = lp.id
-   LEFT JOIN {block_grade_me} bgm ON bgm.courseid = l.course AND bgm.iteminstance = l.id
-   LEFT JOIN {lesson_grades} lg ON lg.lessonid = l.id AND lg.userid = la.userid
-       WHERE la.userid $insql AND l.grade > 0 AND la.useranswer LIKE ?";
+    LEFT JOIN {lesson_grades} lg ON lg.lessonid = l.id AND lg.userid = la.userid
+    WHERE la.userid $insql AND l.grade > 0 AND la.useranswer LIKE ?";
+    
     $inparams[] = '%s:6:"graded";i:0%';
     return array($query, $inparams);
 }

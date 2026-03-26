@@ -51,7 +51,8 @@ function block_grade_me_query_quiz($gradebookusers) {
         JOIN {question_attempts} qna ON qna.questionusageid = qza.uniqueid
                                         AND qas.questionattemptid = qna.id
         JOIN {block_grade_me} bgm ON bgm.iteminstance = qza.quiz
-                                     AND bgm.itemmodule = 'quiz'
-       WHERE qas.state = '".question_state::$needsgrading."'";
+                                    AND bgm.itemmodule = 'quiz'
+    WHERE qas.state = '".question_state::$needsgrading."'
+    GROUP BY qas.id, qza.userid, qza.timemodified, qza.id, qas.sequencenumber";
     return array($query, $inparams);
 }

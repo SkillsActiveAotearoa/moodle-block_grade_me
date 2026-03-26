@@ -42,20 +42,21 @@ function block_grade_me_query_glossary($gradebookusers) {
     $query = ", ge.id submissionid, ge.userid, ge.timemodified timesubmitted
         FROM {glossary_entries} ge
         JOIN {glossary} g ON g.id = ge.glossaryid
-   LEFT JOIN {block_grade_me} bgm ON bgm.courseid = g.course AND bgm.iteminstance = ge.glossaryid
-       WHERE ge.userid $insql
-         AND g.assessed >= 1
-         AND g.scale <> 0
-         AND $concatid NOT IN (
-             SELECT $concatitem
-               FROM {rating} r
-              WHERE r.contextid IN (
+    LEFT JOIN {block_grade_me} bgm ON bgm.courseid = g.course AND bgm.iteminstance = ge.glossaryid
+    WHERE ge.userid $insql
+        AND g.assessed >= 1
+        AND g.scale <> 0
+        AND $concatid NOT IN (
+            SELECT $concatitem
+            FROM {rating} r
+            WHERE r.contextid IN (
                     SELECT cx.id
-                      FROM {context} cx
-                     WHERE cx.contextlevel = 70
-                       AND cx.instanceid = bgm.coursemoduleid
+                    FROM {context} cx
+                    WHERE cx.contextlevel = 70
+                    AND cx.instanceid = bgm.coursemoduleid
                     )
-             )";
+            )
+    GROUP BY ge.id, ge.userid, ge.timemodified";
 
     return array($query, $inparams);
 }

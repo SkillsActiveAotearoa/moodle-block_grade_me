@@ -43,9 +43,9 @@ function block_grade_me_query_turnitintooltwo($gradebookusers) {
     list($insql, $inparams) = $DB->get_in_or_equal($gradebookusers);
 
     $query = ", ts.id submissionid, ts.userid, ts.submission_modified timesubmitted
-        FROM {turnitintooltwo_submissions} ts
-        JOIN {turnitintooltwo} t ON t.id = ts.turnitintooltwoid
-   LEFT JOIN {block_grade_me} bgm ON bgm.courseid = t.course AND bgm.iteminstance = t.id
-       WHERE ts.userid $insql AND t.grade > 0 AND ts.submission_grade IS NOT NULL";
+    FROM {turnitintooltwo_submissions} ts
+    JOIN {turnitintooltwo} t ON t.id = ts.turnitintooltwoid
+    WHERE ts.userid $insql AND t.grade > 0 AND ts.submission_grade IS NOT NULL";
+    
     return array($query, $inparams);
 }
